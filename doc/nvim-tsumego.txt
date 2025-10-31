@@ -1,0 +1,187 @@
+*nvim-tsumego.txt*  Solve tsumego puzzles in Neovim
+
+Author:  nvim-tsumego contributors
+License: MIT
+
+==============================================================================
+CONTENTS                                              *nvim-tsumego-contents*
+
+    1. Introduction ............................ |nvim-tsumego-introduction|
+    2. Requirements ............................ |nvim-tsumego-requirements|
+    3. Installation ............................ |nvim-tsumego-installation|
+    4. Configuration ........................... |nvim-tsumego-configuration|
+    5. Commands ................................ |nvim-tsumego-commands|
+    6. Keymaps ................................. |nvim-tsumego-keymaps|
+    7. Puzzles ................................. |nvim-tsumego-puzzles|
+    8. Functions ............................... |nvim-tsumego-functions|
+
+==============================================================================
+INTRODUCTION                                      *nvim-tsumego-introduction*
+
+nvim-tsumego is a Neovim plugin for solving tsumego (Go tactics puzzles)
+directly in your terminal editor. It provides a beautiful terminal UI using
+Unicode characters and a wood-like color scheme.
+
+Tsumego are tactical problems in the game of Go (also known as Baduk or
+Weiqi). They typically involve life and death situations, capturing stones,
+or finding the best sequence of moves.
+
+==============================================================================
+REQUIREMENTS                                      *nvim-tsumego-requirements*
+
+- Neovim >= 0.8.0
+- nvim-lua/plenary.nvim
+
+==============================================================================
+INSTALLATION                                      *nvim-tsumego-installation*
+
+Using lazy.nvim: >lua
+    {
+      "linuxswords/nvim-tsumego",
+      dependencies = { "nvim-lua/plenary.nvim" },
+      config = function()
+        require("nvim-tsumego").setup()
+      end,
+    }
+<
+
+Using packer.nvim: >lua
+    use {
+      "linuxswords/nvim-tsumego",
+      requires = { "nvim-lua/plenary.nvim" },
+      config = function()
+        require("nvim-tsumego").setup()
+      end,
+    }
+<
+
+==============================================================================
+CONFIGURATION                                    *nvim-tsumego-configuration*
+
+Configure the plugin using the setup function: >lua
+    require("nvim-tsumego").setup({
+      ui = {
+        chars = {
+          black_stone = "●",
+          white_stone = "○",
+        },
+        colors = {
+          board_bg = "#D4A574",  -- Light wood color
+        },
+        show_coordinates = true,
+      },
+      puzzle_source = {
+        local_dir = vim.fn.stdpath("data") .. "/nvim-tsumego/puzzles",
+      },
+      keymaps = {
+        quit = "q",
+        next_puzzle = "n",
+        previous_puzzle = "p",
+        reset = "r",
+        hint = "h",
+      },
+    })
+<
+
+Configuration Options:
+
+ui.chars                Dictionary of Unicode characters for board display
+ui.colors               Dictionary of color values (hex format)
+ui.show_coordinates     Boolean to show/hide coordinate labels
+puzzle_source.local_dir Directory containing SGF puzzle files
+keymaps.*               Key mappings for various actions
+
+==============================================================================
+COMMANDS                                              *nvim-tsumego-commands*
+
+:Tsumego [action]                                                  *:Tsumego*
+    Main command for the plugin.
+
+    Actions:
+        start       Start/open a puzzle (default)
+        next        Load next puzzle
+        prev        Load previous puzzle
+        reset       Reset current puzzle to initial state
+        hint        Show hint for current position
+        quit        Close the puzzle window
+        refresh     Refresh puzzle list from directory
+
+==============================================================================
+KEYMAPS                                                *nvim-tsumego-keymaps*
+
+The following keymaps are available when a puzzle is open:
+
+    m               Enter a move (prompts for coordinate)
+    n               Next puzzle (configurable)
+    p               Previous puzzle (configurable)
+    r               Reset puzzle (configurable)
+    h               Show hint (configurable)
+    q               Quit (configurable)
+
+All keymaps except 'm' can be customized in the configuration.
+
+==============================================================================
+PUZZLES                                                *nvim-tsumego-puzzles*
+
+Puzzle Sources ~
+
+The plugin reads SGF files from your puzzle directory:
+    Default: ~/.local/share/nvim/nvim-tsumego/puzzles
+
+Recommended sources for free puzzles:
+    - d180cf/problems (GitHub)
+    - tsumego.tasuki.org
+    - 101books.github.io
+
+SGF Format ~
+
+Puzzles must be in SGF (Smart Game Format) with:
+    - Initial setup: AB[] for black stones, AW[] for white stones
+    - Solution tree with variations
+    - Comments containing "RIGHT" or "CORRECT" for correct solutions
+
+Example: >
+    (;SZ[9]AB[cc][cd]AW[dc][dd]
+    ;B[ec]
+    (;W[ed];B[fc]C[RIGHT])
+    (;W[fc]C[Wrong])
+    )
+<
+
+Coordinate System ~
+
+Moves use standard Go notation:
+    Columns: A-S (left to right)
+    Rows: 1-19 (bottom to top)
+    Examples: D4, Q16, K10
+
+==============================================================================
+FUNCTIONS                                            *nvim-tsumego-functions*
+
+require("nvim-tsumego").setup({config})              *nvim-tsumego.setup()*
+    Setup the plugin with optional configuration.
+
+require("nvim-tsumego").start([index])               *nvim-tsumego.start()*
+    Start a puzzle. Optional index to load specific puzzle.
+
+require("nvim-tsumego").next_puzzle()          *nvim-tsumego.next_puzzle()*
+    Load the next puzzle in the list.
+
+require("nvim-tsumego").previous_puzzle()  *nvim-tsumego.previous_puzzle()*
+    Load the previous puzzle in the list.
+
+require("nvim-tsumego").reset()                      *nvim-tsumego.reset()*
+    Reset the current puzzle to initial state.
+
+require("nvim-tsumego").show_hint()              *nvim-tsumego.show_hint()*
+    Display a hint for the current position.
+
+require("nvim-tsumego").quit()                        *nvim-tsumego.quit()*
+    Close the puzzle window.
+
+require("nvim-tsumego").refresh_puzzle_list()
+                                          *nvim-tsumego.refresh_puzzle_list()*
+    Refresh the list of available puzzles from the puzzle directory.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

@@ -1,0 +1,13 @@
+(;GM[1]FF[4]CA[UTF-8]AP[nvim-tsumego]
+SZ[9]
+GN[Sample Tsumego]
+DI[Elementary]
+C[Black to play and capture the white stones]
+AB[cc][dc][ec][cd][ed][ce][de][ee]
+AW[dd][bd][be][cf][df]
+;B[bf]C[First move - cut!]
+(;W[bg]
+  (;B[cg]C[RIGHT! White is captured.])
+  (;B[ae]C[Wrong direction]))
+(;W[ae]C[Wrong response])
+)

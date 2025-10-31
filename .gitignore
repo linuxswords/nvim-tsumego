@@ -1,0 +1,19 @@
+# Neovim plugin
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Lua
+luac.out
+
+# Test files
+/test/
+/tmp/
+
+# IDE
+.vscode/
+.idea/
+
+# Debug
+debug.log
