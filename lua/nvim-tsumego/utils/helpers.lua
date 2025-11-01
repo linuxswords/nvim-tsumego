@@ -1,6 +1,34 @@
 -- Utility helper functions
 local M = {}
 
+-- Convert column index to letter (skipping 'I' as per Go convention)
+-- 0=A, 1=B, ..., 7=H, 8=J, 9=K, ..., 18=T
+function M.col_index_to_letter(col)
+  if col < 8 then
+    -- A-H (columns 0-7)
+    return string.char(65 + col)
+  else
+    -- J-T (columns 8-18), skipping I
+    return string.char(65 + col + 1)
+  end
+end
+
+-- Convert column letter to index (accounting for skipped 'I')
+-- A=0, B=1, ..., H=7, J=8, K=9, ..., T=18
+function M.col_letter_to_index(letter)
+  local byte = string.byte(letter)
+  local a_byte = string.byte('A')
+  local i_byte = string.byte('I')
+
+  if byte < i_byte then
+    -- A-H
+    return byte - a_byte
+  else
+    -- J-T (I is skipped)
+    return byte - a_byte - 1
+  end
+end
+
 -- Parse coordinate input (e.g., "D4" -> row=3, col=3 for 0-indexed)
 function M.parse_coordinate(input, size)
   if not input or #input < 2 then
@@ -13,8 +41,8 @@ function M.parse_coordinate(input, size)
   local col_char = input:sub(1, 1)
   local row_str = input:sub(2)
 
-  -- Convert column letter to index (A=0, B=1, ...)
-  local col = string.byte(col_char) - string.byte('A')
+  -- Convert column letter to index (A=0, B=1, ..., skipping I)
+  local col = M.col_letter_to_index(col_char)
 
   -- Convert row string to index (1 = size-1 in 0-indexed, size = 0)
   -- Go boards are typically numbered 1-19 from bottom to top
@@ -35,7 +63,7 @@ end
 
 -- Format coordinate for display (e.g., row=3, col=3 -> "D4")
 function M.format_coordinate(row, col, size)
-  local col_char = string.char(65 + col) -- 0=A, 1=B, ...
+  local col_char = M.col_index_to_letter(col)
   local row_num = size - row
   return col_char .. row_num
 end

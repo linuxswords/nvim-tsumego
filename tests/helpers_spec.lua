@@ -22,7 +22,8 @@ describe("helpers", function()
       local coord = helpers.parse_coordinate("A19", 19)
       assert.are.same({ row = 0, col = 0 }, coord)
 
-      local coord2 = helpers.parse_coordinate("S1", 19)
+      -- T is the last column on 19x19 board (col 18), skipping I
+      local coord2 = helpers.parse_coordinate("T1", 19)
       assert.are.same({ row = 18, col = 18 }, coord2)
     end)
 
@@ -49,6 +50,16 @@ describe("helpers", function()
       assert.is_nil(coord)
       assert.is_not_nil(err)
     end)
+
+    it("should skip letter 'I' in Go notation", function()
+      -- 'I' should be treated as invalid/out of bounds
+      -- H=7, J=8 (I is skipped)
+      local coord_h = helpers.parse_coordinate("H1", 9)
+      assert.are.same({ row = 8, col = 7 }, coord_h)
+
+      local coord_j = helpers.parse_coordinate("J1", 9)
+      assert.are.same({ row = 8, col = 8 }, coord_j)
+    end)
   end)
 
   describe("format_coordinate", function()
@@ -66,8 +77,9 @@ describe("helpers", function()
       local str = helpers.format_coordinate(0, 0, 19)
       assert.equals("A19", str)
 
+      -- col 18 is T (skipping I), row 18 is 1
       local str2 = helpers.format_coordinate(18, 18, 19)
-      assert.equals("S1", str2)
+      assert.equals("T1", str2)
     end)
   end)
 
@@ -80,7 +92,8 @@ describe("helpers", function()
     end)
 
     it("should round-trip for multiple coordinates", function()
-      local coords = { "A1", "A9", "I1", "I9", "E5" }
+      -- Note: 'I' is skipped in Go notation, so using J instead
+      local coords = { "A1", "A9", "J1", "J9", "E5" }
       for _, original in ipairs(coords) do
         local coord = helpers.parse_coordinate(original, 9)
         local formatted = helpers.format_coordinate(coord.row, coord.col, 9)

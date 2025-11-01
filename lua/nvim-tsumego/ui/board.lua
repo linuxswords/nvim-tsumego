@@ -1,6 +1,7 @@
 -- Board UI rendering module
 local M = {}
 local config = require("nvim-tsumego.config")
+local helpers = require("nvim-tsumego.utils.helpers")
 
 -- Create highlight groups for the board
 function M.setup_highlights()
@@ -114,11 +115,11 @@ function M.render_board(board_state, size)
   local lines = {}
   local all_highlights = {}
 
-  -- Add column coordinates (letters)
+  -- Add column coordinates (letters, skipping 'I')
   if show_coords then
     local coord_line = "   "
     for col = 0, size - 1 do
-      coord_line = coord_line .. string.char(65 + col) -- A, B, C, ...
+      coord_line = coord_line .. helpers.col_index_to_letter(col) -- A, B, C, ..., H, J, K, ... (no I)
       if col < size - 1 then
         coord_line = coord_line .. " "
       end
