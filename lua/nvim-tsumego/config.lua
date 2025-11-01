@@ -8,7 +8,7 @@ M.defaults = {
     -- Characters for board elements
     chars = {
       black_stone = "●",
-      white_stone = "○",
+      white_stone = "●",  -- Same shape as black, but colored white via highlight
       empty = "·",
       star_point = "+",  -- Star points (hoshi) marking key intersections
       last_move_marker = "◆",

@@ -17,7 +17,7 @@ describe("config", function()
 
     it("should have default UI characters", function()
       assert.equals("●", config.defaults.ui.chars.black_stone)
-      assert.equals("○", config.defaults.ui.chars.white_stone)
+      assert.equals("●", config.defaults.ui.chars.white_stone)  -- Same shape, different color via highlight
       assert.is_not_nil(config.defaults.ui.chars.cross)
     end)
 
