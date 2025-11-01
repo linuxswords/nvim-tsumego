@@ -170,14 +170,6 @@ function M.make_move(game_state, row, col)
   game_state.current_board.last_move = { row = row, col = col }
   table.insert(game_state.move_history, { row = row, col = col, color = player_color })
 
-  -- Check if this is the correct solution
-  if solution.is_correct then
-    game_state.game_over = true
-    game_state.success = true
-    game_state.message = "Correct! Puzzle solved!"
-    return true, "Puzzle solved!"
-  end
-
   -- Play opponent's response if there is one
   if solution.variations and #solution.variations > 0 then
     -- Take the first variation as the opponent's response
@@ -203,13 +195,22 @@ function M.make_move(game_state, row, col)
 
         -- Update solution path to opponent's variations
         game_state.current_solution_path = opponent_move.variations
+
+        -- Check if this was the last move in the sequence
+        if not opponent_move.variations or #opponent_move.variations == 0 then
+          game_state.game_over = true
+          game_state.success = true
+          game_state.message = "Puzzle solved! All moves correct!"
+        else
+          game_state.message = "Good move! Continue..."
+        end
       end
     end
   else
-    -- No more moves in solution, puzzle might be solved
+    -- No more opponent responses, puzzle is solved
     game_state.game_over = true
     game_state.success = true
-    game_state.message = "Puzzle solved!"
+    game_state.message = "Puzzle solved! All moves correct!"
   end
 
   return true, "Move accepted"
