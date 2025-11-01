@@ -172,8 +172,8 @@ describe("board_ui", function()
       local lines = board_ui.render_board(board_state, 19)
 
       -- Should show subset, not full board (with coords + 1 padding = rows 2-6, cols 2-6)
-      -- That's 5 rows + 1 coord line + 1 empty + 1 shortcuts = 8 lines total
-      assert.equals(8, #lines)
+      -- That's 5 rows + 1 coord line + 1 empty + 1 move instruction + 1 shortcuts = 9 lines total
+      assert.equals(9, #lines)
 
       -- Check that coordinates show correct subset (C-G for columns)
       local coord_line = lines[1]
@@ -182,6 +182,10 @@ describe("board_ui", function()
       -- Should not show A or T
       assert.is_true(coord_line:find("A") == nil)
       assert.is_true(coord_line:find("T") == nil)
+
+      -- Check that move instruction is displayed
+      local move_instruction = lines[#lines - 1]
+      assert.is_true(move_instruction:find("Type 'm'") ~= nil)
 
       -- Check that shortcuts are displayed
       local shortcuts_line = lines[#lines]

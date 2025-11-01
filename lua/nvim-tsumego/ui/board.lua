@@ -276,6 +276,12 @@ function M.render_board(board_state, size, game_info)
   table.insert(lines, "")
   table.insert(all_highlights, {})
 
+  -- Move instruction
+  local move_instruction = "Type 'm' then enter coordinates (e.g., D4) to place a stone"
+  table.insert(lines, move_instruction)
+  table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #move_instruction }})
+
+  -- Keyboard shortcuts
   local keymaps = config.options.keymaps
   local shortcuts = string.format(
     "[%s] Hint  [%s] Reset  [%s] Next  [%s] Prev  [%s] Quit",
