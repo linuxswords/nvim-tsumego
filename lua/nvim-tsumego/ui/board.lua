@@ -221,7 +221,7 @@ function M.render_board(board_state, size, game_info)
 
   -- Add game status header if game info is provided
   if game_info then
-    -- First line: Status and difficulty
+    -- Status line: Status and difficulty
     local status_line = ""
     if game_info.game_over then
       if game_info.success then
@@ -240,12 +240,6 @@ function M.render_board(board_state, size, game_info)
 
     table.insert(lines, status_line)
     table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #status_line }})
-
-    -- Second line: Feedback message if available
-    if game_info.message and game_info.message ~= "" then
-      table.insert(lines, game_info.message)
-      table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #game_info.message }})
-    end
 
     -- Add empty line separator
     table.insert(lines, "")
@@ -275,6 +269,12 @@ function M.render_board(board_state, size, game_info)
   -- Add keyboard shortcuts footer
   table.insert(lines, "")
   table.insert(all_highlights, {})
+
+  -- Add feedback message if available (below the board)
+  if game_info and game_info.message and game_info.message ~= "" then
+    table.insert(lines, game_info.message)
+    table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #game_info.message }})
+  end
 
   -- Move instruction
   local move_instruction = "Type 'm' then enter coordinates (e.g., D4) to place a stone"
