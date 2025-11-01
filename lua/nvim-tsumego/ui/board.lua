@@ -106,32 +106,13 @@ local function render_line(board_state, row, size, show_coords)
 end
 
 -- Render the entire board
-function M.render_board(board_state, size, game_info)
+function M.render_board(board_state, size)
   size = size or 19
   local show_coords = config.options.ui.show_coordinates
   local chars = config.options.ui.chars
 
   local lines = {}
   local all_highlights = {}
-
-  -- Add header with turn indicator and game status
-  if game_info then
-    local header = ""
-    if game_info.game_over then
-      if game_info.success then
-        header = "✓ Puzzle Solved!"
-      else
-        header = "✗ Wrong move - Press 'r' to reset"
-      end
-    else
-      header = "● Black to play"
-    end
-
-    table.insert(lines, header)
-    table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #header }})
-    table.insert(lines, "")
-    table.insert(all_highlights, {})
-  end
 
   -- Add column coordinates (letters)
   if show_coords then
@@ -184,10 +165,9 @@ function M.display_board(board_state, size, game_info)
   vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
   vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
   vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
-  vim.api.nvim_buf_set_name(bufnr, "Tsumego Board")
 
   -- Render the board
-  local lines, highlights = M.render_board(board_state, size, game_info)
+  local lines, highlights = M.render_board(board_state, size)
 
   -- Set lines
   vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
@@ -209,6 +189,20 @@ function M.display_board(board_state, size, game_info)
     end
   end
 
+  -- Determine window title based on game state
+  local title = " Tsumego "
+  if game_info then
+    if game_info.game_over then
+      if game_info.success then
+        title = " ✓ Puzzle Solved! "
+      else
+        title = " ✗ Wrong move - Press 'r' to reset "
+      end
+    else
+      title = " ● Black to play "
+    end
+  end
+
   -- Open in a window
   local win_width = vim.o.columns
   local win_height = vim.o.lines
@@ -226,6 +220,8 @@ function M.display_board(board_state, size, game_info)
     col = col,
     style = "minimal",
     border = "rounded",
+    title = title,
+    title_pos = "center",
   })
 
   -- Set window background
