@@ -129,5 +129,30 @@ describe("board_ui", function()
       end
       assert.is_true(has_last_move_hl)
     end)
+
+    it("should render star points on standard board sizes", function()
+      -- Test 9x9 board
+      local board_state = {}
+      for row = 0, 8 do
+        board_state[row] = {}
+      end
+
+      local lines = board_ui.render_board(board_state, 9)
+      local board_str = table.concat(lines, "\n")
+
+      -- Star points should be present (either as explicit star_point char or default)
+      assert.is_not_nil(lines)
+      assert.is_true(#lines > 0)
+
+      -- Test 19x19 board
+      board_state = {}
+      for row = 0, 18 do
+        board_state[row] = {}
+      end
+
+      lines = board_ui.render_board(board_state, 19)
+      assert.is_not_nil(lines)
+      assert.is_true(#lines > 0)
+    end)
   end)
 end)

@@ -10,6 +10,7 @@ M.defaults = {
       black_stone = "●",
       white_stone = "○",
       empty = "·",
+      star_point = "+",  -- Star points (hoshi) marking key intersections
       last_move_marker = "◆",
       -- Grid characters
       corner_tl = "┌",
@@ -33,6 +34,7 @@ M.defaults = {
       white_stone = "#FFFFFF",
       last_move = "#FF0000",
       coordinate = "#654321",
+      star_point = "#654321",  -- Same as coordinates for subtle but visible marking
     },
     -- Board display settings
     show_coordinates = true,

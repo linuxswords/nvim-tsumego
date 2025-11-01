@@ -3,6 +3,51 @@ local M = {}
 local config = require("nvim-tsumego.config")
 local helpers = require("nvim-tsumego.utils.helpers")
 
+-- Get star point positions for a given board size
+-- Returns a set of positions {[row*100+col] = true} for fast lookup
+local function get_star_points(size)
+  local points = {}
+
+  if size == 19 then
+    -- Standard 19x19 star points
+    local positions = {
+      {3, 3}, {3, 9}, {3, 15},
+      {9, 3}, {9, 9}, {9, 15},
+      {15, 3}, {15, 9}, {15, 15}
+    }
+    for _, pos in ipairs(positions) do
+      points[pos[1] * 100 + pos[2]] = true
+    end
+  elseif size == 13 then
+    -- Standard 13x13 star points
+    local positions = {
+      {3, 3}, {3, 9},
+      {6, 6},
+      {9, 3}, {9, 9}
+    }
+    for _, pos in ipairs(positions) do
+      points[pos[1] * 100 + pos[2]] = true
+    end
+  elseif size == 9 then
+    -- Standard 9x9 star points
+    local positions = {
+      {2, 2}, {2, 6},
+      {4, 4},
+      {6, 2}, {6, 6}
+    }
+    for _, pos in ipairs(positions) do
+      points[pos[1] * 100 + pos[2]] = true
+    end
+  end
+
+  return points
+end
+
+-- Check if a position is a star point
+local function is_star_point(row, col, star_points)
+  return star_points[row * 100 + col] ~= nil
+end
+
 -- Create highlight groups for the board
 function M.setup_highlights()
   local colors = config.options.ui.colors
@@ -34,6 +79,11 @@ function M.setup_highlights()
     fg = colors.coordinate,
     bg = colors.board_bg,
   })
+  vim.api.nvim_set_hl(0, "TsumegoStarPoint", {
+    fg = colors.star_point,
+    bg = colors.board_bg,
+    bold = true,
+  })
 end
 
 -- Get the character for a grid intersection based on position
@@ -57,7 +107,7 @@ local function get_grid_char(row, col, size)
 end
 
 -- Render a single line of the board
-local function render_line(board_state, row, size, show_coords)
+local function render_line(board_state, row, size, show_coords, star_points)
   local chars = config.options.ui.chars
   local line = {}
   local highlights = {}
@@ -86,8 +136,14 @@ local function render_line(board_state, row, size, show_coords)
       char = chars.white_stone
       hl = is_last_move and "TsumegoLastMove" or "TsumegoWhiteStone"
     else
-      char = get_grid_char(row, col, size)
-      hl = "TsumegoGrid"
+      -- Empty intersection - check if it's a star point
+      if is_star_point(row, col, star_points) then
+        char = chars.star_point
+        hl = "TsumegoStarPoint"
+      else
+        char = get_grid_char(row, col, size)
+        hl = "TsumegoGrid"
+      end
     end
 
     local start = #table.concat(line)
@@ -111,6 +167,7 @@ function M.render_board(board_state, size)
   size = size or 19
   local show_coords = config.options.ui.show_coordinates
   local chars = config.options.ui.chars
+  local star_points = get_star_points(size)
 
   local lines = {}
   local all_highlights = {}
@@ -130,7 +187,7 @@ function M.render_board(board_state, size)
 
   -- Render each row
   for row = 0, size - 1 do
-    local line, highlights = render_line(board_state, row, size, show_coords)
+    local line, highlights = render_line(board_state, row, size, show_coords, star_points)
     table.insert(lines, line)
     table.insert(all_highlights, highlights)
 
