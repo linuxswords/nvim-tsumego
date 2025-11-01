@@ -23,6 +23,7 @@ function M.new_game(puzzle)
     move_history = {},
     current_solution_path = puzzle.solutions,
     size = puzzle.size,
+    metadata = puzzle.metadata or {},
     player_turn = true, -- Player moves first (usually black)
     game_over = false,
     success = false,

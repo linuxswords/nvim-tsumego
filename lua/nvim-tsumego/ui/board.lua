@@ -207,7 +207,7 @@ local function render_line(board_state, row, size, show_coords, star_points, min
 end
 
 -- Render the entire board
-function M.render_board(board_state, size)
+function M.render_board(board_state, size, game_info)
   size = size or 19
   local show_coords = config.options.ui.show_coordinates
   local chars = config.options.ui.chars
@@ -218,6 +218,32 @@ function M.render_board(board_state, size)
 
   local lines = {}
   local all_highlights = {}
+
+  -- Add game status header if game info is provided
+  if game_info then
+    local status_line = ""
+    if game_info.game_over then
+      if game_info.success then
+        status_line = "✓ Puzzle Solved!"
+      else
+        status_line = "✗ Wrong move - Press 'r' to reset"
+      end
+    else
+      status_line = "● Black to play"
+    end
+
+    -- Add difficulty if available
+    if game_info.difficulty and game_info.difficulty ~= "" then
+      status_line = status_line .. " [" .. game_info.difficulty .. "]"
+    end
+
+    table.insert(lines, status_line)
+    table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #status_line }})
+
+    -- Add empty line separator
+    table.insert(lines, "")
+    table.insert(all_highlights, {})
+  end
 
   -- Add column coordinates (letters, skipping 'I')
   if show_coords then
@@ -252,8 +278,8 @@ function M.display_board(board_state, size, game_info)
   vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
   vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
 
-  -- Render the board
-  local lines, highlights = M.render_board(board_state, size)
+  -- Render the board with game info
+  local lines, highlights = M.render_board(board_state, size, game_info)
 
   -- Set lines
   vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
@@ -275,19 +301,8 @@ function M.display_board(board_state, size, game_info)
     end
   end
 
-  -- Determine window title based on game state
-  local title = " Tsumego "
-  if game_info then
-    if game_info.game_over then
-      if game_info.success then
-        title = " ✓ Puzzle Solved! "
-      else
-        title = " ✗ Wrong move - Press 'r' to reset "
-      end
-    else
-      title = " ● Black to play "
-    end
-  end
+  -- Simple window title
+  local title = " nvim-tsumego "
 
   -- Open in a window
   local win_width = vim.o.columns
