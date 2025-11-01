@@ -221,6 +221,7 @@ function M.render_board(board_state, size, game_info)
 
   -- Add game status header if game info is provided
   if game_info then
+    -- First line: Status and difficulty
     local status_line = ""
     if game_info.game_over then
       if game_info.success then
@@ -239,6 +240,12 @@ function M.render_board(board_state, size, game_info)
 
     table.insert(lines, status_line)
     table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #status_line }})
+
+    -- Second line: Feedback message if available
+    if game_info.message and game_info.message ~= "" then
+      table.insert(lines, game_info.message)
+      table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #game_info.message }})
+    end
 
     -- Add empty line separator
     table.insert(lines, "")
@@ -264,6 +271,22 @@ function M.render_board(board_state, size, game_info)
     table.insert(lines, line)
     table.insert(all_highlights, highlights)
   end
+
+  -- Add keyboard shortcuts footer
+  table.insert(lines, "")
+  table.insert(all_highlights, {})
+
+  local keymaps = config.options.keymaps
+  local shortcuts = string.format(
+    "[%s] Hint  [%s] Reset  [%s] Next  [%s] Prev  [%s] Quit",
+    keymaps.hint,
+    keymaps.reset,
+    keymaps.next_puzzle,
+    keymaps.previous_puzzle,
+    keymaps.quit
+  )
+  table.insert(lines, shortcuts)
+  table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #shortcuts }})
 
   return lines, all_highlights
 end

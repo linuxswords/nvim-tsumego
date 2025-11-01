@@ -82,6 +82,7 @@ local function update_display()
     game_over = state.current_game.game_over,
     success = state.current_game.success,
     difficulty = state.current_game.metadata and state.current_game.metadata.difficulty,
+    message = state.current_game.message,
   }
 
   local bufnr, win_id = board_ui.display_board(
