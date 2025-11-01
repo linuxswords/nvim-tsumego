@@ -154,5 +154,34 @@ describe("board_ui", function()
       assert.is_not_nil(lines)
       assert.is_true(#lines > 0)
     end)
+
+    it("should show subset with padding around stones", function()
+      -- Create a 19x19 board with stones only in corner
+      local board_state = {}
+      for row = 0, 18 do
+        board_state[row] = {}
+      end
+
+      -- Place stones in top-left corner (rows 3-5, cols 3-5)
+      board_state[3][3] = "B"
+      board_state[3][4] = "W"
+      board_state[4][3] = "W"
+      board_state[5][5] = "B"
+
+      config.options.ui.show_coordinates = true
+      local lines = board_ui.render_board(board_state, 19)
+
+      -- Should show subset, not full board (with coords + 1 padding = rows 2-6, cols 2-6)
+      -- That's 5 rows + 1 coord line = 6 lines total
+      assert.equals(6, #lines)
+
+      -- Check that coordinates show correct subset (C-G for columns)
+      local coord_line = lines[1]
+      assert.is_true(coord_line:find("C") ~= nil)
+      assert.is_true(coord_line:find("G") ~= nil)
+      -- Should not show A or T
+      assert.is_true(coord_line:find("A") == nil)
+      assert.is_true(coord_line:find("T") == nil)
+    end)
   end)
 end)

@@ -48,6 +48,50 @@ local function is_star_point(row, col, star_points)
   return star_points[row * 100 + col] ~= nil
 end
 
+-- Calculate the bounding box of all stones on the board
+-- Returns min_row, max_row, min_col, max_col or nil if no stones
+local function calculate_stone_bounds(board_state, size)
+  local min_row, max_row = size, -1
+  local min_col, max_col = size, -1
+
+  for row = 0, size - 1 do
+    for col = 0, size - 1 do
+      if board_state[row] and board_state[row][col] then
+        min_row = math.min(min_row, row)
+        max_row = math.max(max_row, row)
+        min_col = math.min(min_col, col)
+        max_col = math.max(max_col, col)
+      end
+    end
+  end
+
+  -- If no stones found, return nil
+  if max_row == -1 then
+    return nil
+  end
+
+  return min_row, max_row, min_col, max_col
+end
+
+-- Calculate display bounds with padding (1 extra row/column around stones)
+-- Returns min_row, max_row, min_col, max_col
+local function calculate_display_bounds(board_state, size)
+  local min_row, max_row, min_col, max_col = calculate_stone_bounds(board_state, size)
+
+  -- If no stones, show full board
+  if not min_row then
+    return 0, size - 1, 0, size - 1
+  end
+
+  -- Add padding of 1 in each direction, capped at board boundaries
+  min_row = math.max(0, min_row - 1)
+  max_row = math.min(size - 1, max_row + 1)
+  min_col = math.max(0, min_col - 1)
+  max_col = math.min(size - 1, max_col + 1)
+
+  return min_row, max_row, min_col, max_col
+end
+
 -- Create highlight groups for the board
 function M.setup_highlights()
   local colors = config.options.ui.colors
@@ -107,7 +151,7 @@ local function get_grid_char(row, col, size)
 end
 
 -- Render a single line of the board
-local function render_line(board_state, row, size, show_coords, star_points)
+local function render_line(board_state, row, size, show_coords, star_points, min_col, max_col)
   local chars = config.options.ui.chars
   local line = {}
   local highlights = {}
@@ -120,7 +164,7 @@ local function render_line(board_state, row, size, show_coords, star_points)
     table.insert(highlights, { hl = "TsumegoCoordinate", start = 0, finish = 3 })
   end
 
-  for col = 0, size - 1 do
+  for col = min_col, max_col do
     local stone = board_state[row] and board_state[row][col]
     local is_last_move = board_state.last_move and
                          board_state.last_move.row == row and
@@ -150,7 +194,7 @@ local function render_line(board_state, row, size, show_coords, star_points)
     table.insert(line, char)
 
     -- Add spacing between intersections (except last column)
-    if col < size - 1 then
+    if col < max_col then
       table.insert(line, " ")
       table.insert(highlights, { hl = hl, start = start, finish = start + 1 })
       table.insert(highlights, { hl = "TsumegoGrid", start = start + 1, finish = start + 2 })
@@ -169,15 +213,18 @@ function M.render_board(board_state, size)
   local chars = config.options.ui.chars
   local star_points = get_star_points(size)
 
+  -- Calculate display bounds (subset of board to show)
+  local min_row, max_row, min_col, max_col = calculate_display_bounds(board_state, size)
+
   local lines = {}
   local all_highlights = {}
 
   -- Add column coordinates (letters, skipping 'I')
   if show_coords then
     local coord_line = "   "
-    for col = 0, size - 1 do
+    for col = min_col, max_col do
       coord_line = coord_line .. helpers.col_index_to_letter(col) -- A, B, C, ..., H, J, K, ... (no I)
-      if col < size - 1 then
+      if col < max_col then
         coord_line = coord_line .. " "
       end
     end
@@ -185,9 +232,9 @@ function M.render_board(board_state, size)
     table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #coord_line }})
   end
 
-  -- Render each row
-  for row = 0, size - 1 do
-    local line, highlights = render_line(board_state, row, size, show_coords, star_points)
+  -- Render each row (only the visible subset)
+  for row = min_row, max_row do
+    local line, highlights = render_line(board_state, row, size, show_coords, star_points, min_col, max_col)
     table.insert(lines, line)
     table.insert(all_highlights, highlights)
   end
