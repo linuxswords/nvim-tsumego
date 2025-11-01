@@ -77,10 +77,16 @@ local function update_display()
     vim.api.nvim_win_close(state.win_id, true)
   end
 
-  -- Display the board
+  -- Display the board with game state info
+  local game_info = {
+    game_over = state.current_game.game_over,
+    success = state.current_game.success,
+  }
+
   local bufnr, win_id = board_ui.display_board(
     state.current_game.current_board,
-    state.current_game.size
+    state.current_game.size,
+    game_info
   )
 
   state.bufnr = bufnr

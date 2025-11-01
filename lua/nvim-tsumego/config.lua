@@ -36,7 +36,7 @@ M.defaults = {
     },
     -- Board display settings
     show_coordinates = true,
-    board_padding = 1,
+    board_padding = 0,
   },
 
   -- SGF puzzle source

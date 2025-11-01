@@ -106,7 +106,7 @@ local function render_line(board_state, row, size, show_coords)
 end
 
 -- Render the entire board
-function M.render_board(board_state, size)
+function M.render_board(board_state, size, game_info)
   size = size or 19
   local show_coords = config.options.ui.show_coordinates
   local chars = config.options.ui.chars
@@ -114,8 +114,21 @@ function M.render_board(board_state, size)
   local lines = {}
   local all_highlights = {}
 
-  -- Add top padding
-  for _ = 1, config.options.ui.board_padding do
+  -- Add header with turn indicator and game status
+  if game_info then
+    local header = ""
+    if game_info.game_over then
+      if game_info.success then
+        header = "✓ Puzzle Solved!"
+      else
+        header = "✗ Wrong move - Press 'r' to reset"
+      end
+    else
+      header = "● Black to play"
+    end
+
+    table.insert(lines, header)
+    table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #header }})
     table.insert(lines, "")
     table.insert(all_highlights, {})
   end
@@ -159,17 +172,11 @@ function M.render_board(board_state, size)
     end
   end
 
-  -- Add bottom padding
-  for _ = 1, config.options.ui.board_padding do
-    table.insert(lines, "")
-    table.insert(all_highlights, {})
-  end
-
   return lines, all_highlights
 end
 
 -- Create or update the board buffer
-function M.display_board(board_state, size)
+function M.display_board(board_state, size, game_info)
   local bufnr = vim.api.nvim_create_buf(false, true)
 
   -- Set buffer options
@@ -180,7 +187,7 @@ function M.display_board(board_state, size)
   vim.api.nvim_buf_set_name(bufnr, "Tsumego Board")
 
   -- Render the board
-  local lines, highlights = M.render_board(board_state, size)
+  local lines, highlights = M.render_board(board_state, size, game_info)
 
   -- Set lines
   vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
