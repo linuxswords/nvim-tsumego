@@ -6,14 +6,16 @@ A Neovim plugin for solving tsumego (Go tactics puzzles) directly in your termin
 
 ## Features
 
-- 🎮 Play tsumego puzzles in Neovim
+- 🎮 Solve tsumego puzzles in Neovim
 - 📁 Support for SGF (Smart Game Format) puzzle files
-- 🎨 Beautiful terminal UI with Unicode characters
+- 🎨 Terminal UI with Unicode characters and star points (hoshi)
 - 🌳 Wood-like color scheme for authentic Go board feel
-- 🎯 Automatic solution validation
-- 💡 Built-in hint system
-- ⌨️ Coordinate-based move input (e.g., "D4")
+- 🎯 Automatic solution validation with full sequence tracking
+- 💡 Built-in hint system if hint available
+- ⌨️ Coordinate-based move input using standard Go/SGF notation (e.g., "D4")
 - 🔄 Easy puzzle navigation (next/previous)
+- 🎨 Color-coded feedback messages (red/green/grey)
+- 📊 Difficulty rating display from SGF metadata if available
 
 ## Installation
 
@@ -62,8 +64,8 @@ require("nvim-tsumego").setup({
   ui = {
     chars = {
       black_stone = "●",
-      white_stone = "○",
-      empty = "·",
+      white_stone = "●",  -- Same shape, colored white via highlight
+      star_point = "+",
     },
     colors = {
       board_bg = "#D4A574",  -- Light wood color
@@ -91,6 +93,7 @@ The plugin reads SGF files from your puzzle directory (default: `~/.local/share/
 ### Recommended Sources
 
 1. **d180cf/problems** - Free SGF puzzle collection on GitHub
+
    ```bash
    git clone https://github.com/d180cf/problems.git
    cp -r problems/*/*.sgf ~/.local/share/nvim/nvim-tsumego/puzzles/
@@ -107,11 +110,13 @@ The plugin reads SGF files from your puzzle directory (default: `~/.local/share/
 ### SGF File Format
 
 Puzzles must be in SGF format with:
+
 - Initial board setup using `AB[]` (black stones) and `AW[]` (white stones)
 - Solution moves as game tree variations
 - Comments containing "RIGHT" or "CORRECT" to mark correct solutions
 
 Example minimal SGF:
+
 ```
 (;SZ[9]AB[cc][cd]AW[dc][dd]
 ;B[ec]
@@ -143,9 +148,10 @@ Example minimal SGF:
 
 ### Coordinate System
 
-Moves are entered using standard Go notation:
-- Columns: A-S (left to right)
-- Rows: 1-19 (bottom to top)
+Moves are entered using standard Go/SGF notation:
+
+- Columns: A-H, J-T (left to right, skipping 'I')
+- Rows: 1-19 (top to bottom)
 - Example: "D4", "Q16", "K10" (center of 19x19 board)
 
 ## How It Works
@@ -160,11 +166,14 @@ Moves are entered using standard Go notation:
 ## Board Representation
 
 The plugin uses Unicode characters to display the board:
-- `●` - Black stone
-- `○` - White stone
+
+- `●` - Black stone (black) / White stone (white colored)
+- `+` - Star points (hoshi) for board orientation
 - `┼ ├ ┤ ┬ ┴ ┌ ┐ └ ┘` - Grid lines
 - Wood-like color scheme for authentic feel
-- Coordinate labels (A-S, 1-19)
+- Coordinate labels (A-H, J-T skipping 'I', rows 1-19 top to bottom)
+- Smart board cropping showing only relevant area with padding
+- Color-coded feedback messages (red/green/grey)
 
 ## Development
 
