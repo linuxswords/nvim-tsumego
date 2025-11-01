@@ -35,6 +35,9 @@ M.defaults = {
       last_move = "#FF0000",
       coordinate = "#654321",
       star_point = "#654321",  -- Same as coordinates for subtle but visible marking
+      message_success = "#2E7D32",  -- Green for success messages
+      message_error = "#C62828",  -- Red for error/failure messages
+      message_info = "#424242",  -- Dark grey for informational messages
     },
     -- Board display settings
     show_coordinates = true,

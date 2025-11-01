@@ -48,6 +48,34 @@ local function is_star_point(row, col, star_points)
   return star_points[row * 100 + col] ~= nil
 end
 
+-- Determine message highlight type based on content
+local function get_message_highlight(message)
+  if not message or message == "" then
+    return "TsumegoMessageInfo"
+  end
+
+  local lower_msg = message:lower()
+
+  -- Error/failure messages (red)
+  if lower_msg:find("incorrect") or
+     lower_msg:find("invalid") or
+     lower_msg:find("error") or
+     lower_msg:find("wrong") or
+     lower_msg:find("failed") then
+    return "TsumegoMessageError"
+  end
+
+  -- Success messages (green)
+  if lower_msg:find("solved") or
+     lower_msg:find("correct") or
+     lower_msg:find("good move") then
+    return "TsumegoMessageSuccess"
+  end
+
+  -- Default to info (dark grey)
+  return "TsumegoMessageInfo"
+end
+
 -- Calculate the bounding box of all stones on the board
 -- Returns min_row, max_row, min_col, max_col or nil if no stones
 local function calculate_stone_bounds(board_state, size)
@@ -125,6 +153,21 @@ function M.setup_highlights()
   })
   vim.api.nvim_set_hl(0, "TsumegoStarPoint", {
     fg = colors.star_point,
+    bg = colors.board_bg,
+    bold = true,
+  })
+  vim.api.nvim_set_hl(0, "TsumegoMessageSuccess", {
+    fg = colors.message_success,
+    bg = colors.board_bg,
+    bold = true,
+  })
+  vim.api.nvim_set_hl(0, "TsumegoMessageError", {
+    fg = colors.message_error,
+    bg = colors.board_bg,
+    bold = true,
+  })
+  vim.api.nvim_set_hl(0, "TsumegoMessageInfo", {
+    fg = colors.message_info,
     bg = colors.board_bg,
     bold = true,
   })
@@ -272,8 +315,9 @@ function M.render_board(board_state, size, game_info)
 
   -- Add feedback message if available (below the board)
   if game_info and game_info.message and game_info.message ~= "" then
+    local message_hl = get_message_highlight(game_info.message)
     table.insert(lines, game_info.message)
-    table.insert(all_highlights, {{ hl = "TsumegoCoordinate", start = 0, finish = #game_info.message }})
+    table.insert(all_highlights, {{ hl = message_hl, start = 0, finish = #game_info.message }})
   end
 
   -- Move instruction
