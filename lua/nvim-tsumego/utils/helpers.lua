@@ -44,14 +44,14 @@ function M.parse_coordinate(input, size)
   -- Convert column letter to index (A=0, B=1, ..., skipping I)
   local col = M.col_letter_to_index(col_char)
 
-  -- Convert row string to index (1 = size-1 in 0-indexed, size = 0)
-  -- Go boards are typically numbered 1-19 from bottom to top
+  -- Convert row string to index (1 = 0 in 0-indexed, increasing downward)
+  -- Go boards are numbered 1-19 from top to bottom (standard SGF notation)
   local row_num = tonumber(row_str)
   if not row_num then
     return nil, "Invalid row number"
   end
 
-  local row = size - row_num
+  local row = row_num - 1
 
   -- Validate bounds
   if col < 0 or col >= size or row < 0 or row >= size then
@@ -64,7 +64,7 @@ end
 -- Format coordinate for display (e.g., row=3, col=3 -> "D4")
 function M.format_coordinate(row, col, size)
   local col_char = M.col_index_to_letter(col)
-  local row_num = size - row
+  local row_num = row + 1  -- Row 0 is displayed as 1 (top)
   return col_char .. row_num
 end
 

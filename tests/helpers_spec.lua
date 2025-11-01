@@ -4,26 +4,29 @@ local helpers = require("nvim-tsumego.utils.helpers")
 describe("helpers", function()
   describe("parse_coordinate", function()
     it("should parse valid coordinates", function()
+      -- Row 1 is at the top (row=0 in 0-indexed)
       local coord = helpers.parse_coordinate("A1", 9)
-      assert.are.same({ row = 8, col = 0 }, coord)
+      assert.are.same({ row = 0, col = 0 }, coord)
     end)
 
     it("should parse D4 correctly", function()
+      -- Row 4 is 4th from top (row=3 in 0-indexed)
       local coord = helpers.parse_coordinate("D4", 9)
-      assert.are.same({ row = 5, col = 3 }, coord)
+      assert.are.same({ row = 3, col = 3 }, coord)
     end)
 
     it("should parse coordinates case-insensitively", function()
       local coord = helpers.parse_coordinate("d4", 9)
-      assert.are.same({ row = 5, col = 3 }, coord)
+      assert.are.same({ row = 3, col = 3 }, coord)
     end)
 
     it("should handle 19x19 board", function()
-      local coord = helpers.parse_coordinate("A19", 19)
+      -- A1 is top-left
+      local coord = helpers.parse_coordinate("A1", 19)
       assert.are.same({ row = 0, col = 0 }, coord)
 
-      -- T is the last column on 19x19 board (col 18), skipping I
-      local coord2 = helpers.parse_coordinate("T1", 19)
+      -- T19 is bottom-right (T is col 18, row 19 is row=18 in 0-indexed)
+      local coord2 = helpers.parse_coordinate("T19", 19)
       assert.are.same({ row = 18, col = 18 }, coord2)
     end)
 
@@ -55,31 +58,34 @@ describe("helpers", function()
       -- 'I' should be treated as invalid/out of bounds
       -- H=7, J=8 (I is skipped)
       local coord_h = helpers.parse_coordinate("H1", 9)
-      assert.are.same({ row = 8, col = 7 }, coord_h)
+      assert.are.same({ row = 0, col = 7 }, coord_h)
 
       local coord_j = helpers.parse_coordinate("J1", 9)
-      assert.are.same({ row = 8, col = 8 }, coord_j)
+      assert.are.same({ row = 0, col = 8 }, coord_j)
     end)
   end)
 
   describe("format_coordinate", function()
     it("should format coordinates correctly", function()
-      local str = helpers.format_coordinate(8, 0, 9)
+      -- row=0 is displayed as row 1 (top)
+      local str = helpers.format_coordinate(0, 0, 9)
       assert.equals("A1", str)
     end)
 
     it("should format D4 correctly", function()
-      local str = helpers.format_coordinate(5, 3, 9)
+      -- row=3 is displayed as row 4
+      local str = helpers.format_coordinate(3, 3, 9)
       assert.equals("D4", str)
     end)
 
     it("should format 19x19 board coordinates", function()
+      -- Top-left: row=0, col=0 → A1
       local str = helpers.format_coordinate(0, 0, 19)
-      assert.equals("A19", str)
+      assert.equals("A1", str)
 
-      -- col 18 is T (skipping I), row 18 is 1
+      -- Bottom-right: row=18, col=18 (T) → T19
       local str2 = helpers.format_coordinate(18, 18, 19)
-      assert.equals("T1", str2)
+      assert.equals("T19", str2)
     end)
   end)
 

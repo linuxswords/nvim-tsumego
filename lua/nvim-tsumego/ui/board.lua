@@ -114,7 +114,7 @@ local function render_line(board_state, row, size, show_coords, star_points)
 
   -- Add row coordinate
   if show_coords then
-    local coord = tostring(size - row)
+    local coord = tostring(row + 1)  -- Row 1 at top (row=0), increasing downward
     if #coord == 1 then coord = " " .. coord end
     table.insert(line, coord .. " ")
     table.insert(highlights, { hl = "TsumegoCoordinate", start = 0, finish = 3 })
