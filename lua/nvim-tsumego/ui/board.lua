@@ -149,9 +149,9 @@ local function render_line(board_state, row, size, show_coords, star_points)
     local start = #table.concat(line)
     table.insert(line, char)
 
-    -- Add horizontal line between intersections (except last column)
+    -- Add spacing between intersections (except last column)
     if col < size - 1 then
-      table.insert(line, chars.horizontal)
+      table.insert(line, " ")
       table.insert(highlights, { hl = hl, start = start, finish = start + 1 })
       table.insert(highlights, { hl = "TsumegoGrid", start = start + 1, finish = start + 2 })
     else
@@ -190,25 +190,6 @@ function M.render_board(board_state, size)
     local line, highlights = render_line(board_state, row, size, show_coords, star_points)
     table.insert(lines, line)
     table.insert(all_highlights, highlights)
-
-    -- Add vertical connecting lines between rows (except last row)
-    if row < size - 1 then
-      local vline = {}
-      if show_coords then
-        table.insert(vline, "   ")
-      end
-
-      for col = 0, size - 1 do
-        table.insert(vline, chars.vertical)
-        if col < size - 1 then
-          table.insert(vline, " ")
-        end
-      end
-
-      local vline_str = table.concat(vline)
-      table.insert(lines, vline_str)
-      table.insert(all_highlights, {{ hl = "TsumegoGrid", start = 0, finish = #vline_str }})
-    end
   end
 
   return lines, all_highlights
