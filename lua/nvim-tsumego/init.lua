@@ -94,9 +94,6 @@ local function update_display()
   state.bufnr = bufnr
   state.win_id = win_id
 
-  -- Ensure window has focus
-  vim.api.nvim_set_current_win(win_id)
-
   -- Set up keybindings
   local keymaps = config.options.keymaps
 
@@ -125,23 +122,12 @@ local function update_display()
     M.prompt_move()
   end, { buffer = bufnr, nowait = true, silent = true })
 
-  -- Show status message
-  local status = string.format(
-    "Puzzle %d/%d | Controls: m=move, %s=reset, %s=hint, %s=next, %s=prev, %s=quit",
-    state.current_puzzle_index,
-    #state.puzzle_files,
-    keymaps.reset,
-    keymaps.hint,
-    keymaps.next_puzzle,
-    keymaps.previous_puzzle,
-    keymaps.quit
-  )
-
-  if state.current_game.message ~= "" then
-    status = state.current_game.message .. " | " .. status
-  end
-
-  helpers.notify(status, vim.log.levels.INFO)
+  -- Ensure window focus after any potential UI updates
+  vim.schedule(function()
+    if vim.api.nvim_win_is_valid(win_id) then
+      vim.api.nvim_set_current_win(win_id)
+    end
+  end)
 end
 
 -- Start a new puzzle
