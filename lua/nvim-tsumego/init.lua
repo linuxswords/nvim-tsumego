@@ -144,7 +144,8 @@ end
 -- Prompt for a move
 function M.prompt_move()
   if not state.current_game or state.current_game.game_over then
-    helpers.notify("Game is over. Press " .. config.options.keymaps.reset .. " to reset.", vim.log.levels.WARN)
+    -- Game is over, just update display to show current state
+    update_display()
     return
   end
 
@@ -152,7 +153,9 @@ function M.prompt_move()
     local coords, err = helpers.parse_coordinate(input, state.current_game.size)
 
     if not coords then
-      helpers.notify("Invalid coordinate: " .. err, vim.log.levels.ERROR)
+      -- Set message for invalid coordinate
+      state.current_game.message = "Invalid coordinate: " .. err
+      update_display()
       return
     end
 
@@ -162,31 +165,25 @@ function M.prompt_move()
       coords.col
     )
 
-    if success then
-      update_display()
-    else
-      helpers.notify(message, vim.log.levels.WARN)
-      update_display()
-    end
+    -- Always update display, message is already set in game state
+    update_display()
   end)
 end
 
 -- Reset the current puzzle
 function M.reset()
   if not state.current_game then
-    helpers.notify("No active puzzle", vim.log.levels.WARN)
     return
   end
 
   game_logic.reset_game(state.current_game)
+  state.current_game.message = "Puzzle reset"
   update_display()
-  helpers.notify("Puzzle reset", vim.log.levels.INFO)
 end
 
 -- Show a hint
 function M.show_hint()
   if not state.current_game then
-    helpers.notify("No active puzzle", vim.log.levels.WARN)
     return
   end
 
@@ -195,13 +192,12 @@ function M.show_hint()
   if hint_move then
     local coord_str = helpers.format_coordinate(hint_move.row, hint_move.col, state.current_game.size)
     local color_name = hint_color == "B" and "Black" or "White"
-    helpers.notify(
-      string.format("Hint: Try %s at %s", color_name, coord_str),
-      vim.log.levels.INFO
-    )
+    state.current_game.message = string.format("Hint: Try %s at %s", color_name, coord_str)
   else
-    helpers.notify("No hint available", vim.log.levels.WARN)
+    state.current_game.message = "No hint available"
   end
+
+  update_display()
 end
 
 -- Load next puzzle
@@ -241,8 +237,6 @@ function M.quit()
   state.current_game = nil
   state.bufnr = nil
   state.win_id = nil
-
-  helpers.notify("Tsumego closed", vim.log.levels.INFO)
 end
 
 return M
