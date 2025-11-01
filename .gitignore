@@ -10,6 +10,7 @@ luac.out
 # Test files
 /test/
 /tmp/
+/.deps/
 
 # IDE
 .vscode/

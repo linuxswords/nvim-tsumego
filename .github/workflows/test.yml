@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        nvim-version: ['stable', 'nightly']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: ${{ matrix.nvim-version }}
+
+      - name: Check Neovim version
+        run: nvim --version
+
+      - name: Install dependencies
+        run: make deps
+
+      - name: Run tests
+        run: make test-unit
+
+      - name: Upload coverage (optional)
+        if: success()
+        run: echo "Tests passed for Neovim ${{ matrix.nvim-version }}"

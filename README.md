@@ -1,5 +1,7 @@
 # nvim-tsumego
 
+[![Tests](https://github.com/linuxswords/nvim-tsumego/actions/workflows/test.yml/badge.svg)](https://github.com/linuxswords/nvim-tsumego/actions/workflows/test.yml)
+
 A Neovim plugin for solving tsumego (Go tactics puzzles) directly in your terminal editor.
 
 ## Features
@@ -184,13 +186,35 @@ nvim-tsumego/
 │           └── helpers.lua    # Utility functions
 ├── plugin/
 │   └── nvim-tsumego.lua       # Plugin commands
+├── tests/
+│   └── *_spec.lua             # Test files
 └── README.md
 ```
 
 ### Dependencies
 
 - Neovim >= 0.8.0
-- `nvim-lua/plenary.nvim` (for async operations)
+- `nvim-lua/plenary.nvim` (for async operations and testing)
+
+### Running Tests
+
+The project uses [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) test harness for testing.
+
+```bash
+# Install test dependencies
+make deps
+
+# Run all tests
+make test
+
+# Run only unit tests
+make test-unit
+
+# Clean test dependencies
+make clean
+```
+
+Tests are automatically run on push and pull requests via GitHub Actions.
 
 ## Inspired By
 

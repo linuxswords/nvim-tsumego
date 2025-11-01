@@ -29,14 +29,39 @@ local function parse_node(node_str)
     children = {},
   }
 
-  -- Extract properties (e.g., B[dd], W[cd], C[Comment])
-  for prop, value in node_str:gmatch("(%u%u?)(%b[])") do
-    local parsed_value = parse_property_value(value)
-
-    if not node.properties[prop] then
-      node.properties[prop] = {}
+  -- Extract properties (e.g., B[dd], W[cd], C[Comment], AB[cc][cd][dd])
+  -- First, find all property identifiers and their starting positions
+  local pos = 1
+  while pos <= #node_str do
+    -- Match property identifier (1 or 2 uppercase letters)
+    local prop_start, prop_end, prop = node_str:find("(%u%u?)", pos)
+    if not prop_start then
+      break
     end
-    table.insert(node.properties[prop], parsed_value)
+
+    -- Check if this is followed by a bracket (to distinguish from content)
+    local bracket_pos = node_str:find("%[", prop_end + 1)
+    if bracket_pos and bracket_pos == prop_end + 1 then
+      -- This is a property, collect all its values
+      if not node.properties[prop] then
+        node.properties[prop] = {}
+      end
+
+      -- Collect all bracketed values for this property
+      pos = prop_end + 1
+      while pos <= #node_str and node_str:sub(pos, pos) == "[" do
+        local value_end = node_str:find("]", pos)
+        if value_end then
+          local value = node_str:sub(pos + 1, value_end - 1)
+          table.insert(node.properties[prop], value)
+          pos = value_end + 1
+        else
+          break
+        end
+      end
+    else
+      pos = prop_end + 1
+    end
   end
 
   return node
@@ -54,7 +79,14 @@ local function parse_tree(sgf_content, pos)
       -- Start of a variation
       local child_nodes, new_pos = parse_tree(sgf_content, pos + 1)
       if #nodes > 0 then
-        nodes[#nodes].children = child_nodes
+        -- Attach children to the last node
+        local last_node = nodes[#nodes]
+        for _, child in ipairs(child_nodes) do
+          table.insert(last_node.children, child)
+        end
+      else
+        -- Root level parentheses
+        nodes = child_nodes
       end
       pos = new_pos
     elseif char == ")" then
@@ -89,6 +121,32 @@ local function parse_tree(sgf_content, pos)
   end
 
   return nodes, pos
+end
+
+-- Convert flat node list to tree structure
+-- Sequential nodes become parent-child chains
+local function build_node_tree(nodes)
+  if #nodes == 0 then
+    return nodes
+  end
+
+  -- First node stays as-is
+  local root = nodes[1]
+
+  -- Subsequent sequential nodes become a chain
+  local current = root
+  for i = 2, #nodes do
+    -- If this node has no explicit variations, make it a child of current
+    if #current.children == 0 then
+      table.insert(current.children, nodes[i])
+      current = nodes[i]
+    else
+      -- This node already has variations, so it's complete
+      break
+    end
+  end
+
+  return {root}
 end
 
 -- Extract board size from SGF
@@ -203,8 +261,13 @@ function M.parse_sgf_content(content)
     return nil, "Empty SGF content"
   end
 
-  -- Remove whitespace
-  content = content:gsub("%s+", "")
+  -- Remove whitespace outside of property values
+  -- We need to be careful not to remove spaces inside brackets
+  content = content:gsub("(%b[])([%s]*)", function(bracketed, spaces)
+    return bracketed  -- Keep the bracketed content as-is, remove trailing spaces
+  end)
+  content = content:gsub("([%s]*)([%;%(%)%[])", "%2")  -- Remove spaces before delimiters
+  content = content:gsub("([%;%(%)%]])([%s]*)", "%1")  -- Remove spaces after delimiters
 
   -- Parse the game tree
   local nodes, _ = parse_tree(content)
@@ -212,6 +275,9 @@ function M.parse_sgf_content(content)
   if not nodes or #nodes == 0 then
     return nil, "No nodes found in SGF"
   end
+
+  -- Convert flat list to tree structure
+  nodes = build_node_tree(nodes)
 
   -- First node is the root with game info
   local root_node = nodes[1]
@@ -222,13 +288,8 @@ function M.parse_sgf_content(content)
   -- Build initial board state
   local board_state = build_initial_board(root_node, size)
 
-  -- The rest of the nodes form the solution tree
-  local solution_nodes = {}
-  for i = 2, #nodes do
-    table.insert(solution_nodes, nodes[i])
-  end
-
-  local solutions = build_solution_tree(solution_nodes)
+  -- The children of the root node form the solution tree
+  local solutions = build_solution_tree(root_node.children)
 
   -- Extract metadata
   local metadata = {
