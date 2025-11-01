@@ -94,6 +94,9 @@ local function update_display()
   state.bufnr = bufnr
   state.win_id = win_id
 
+  -- Ensure window has focus
+  vim.api.nvim_set_current_win(win_id)
+
   -- Set up keybindings
   local keymaps = config.options.keymaps
 
