@@ -2,6 +2,10 @@
 
 [![Tests](https://github.com/linuxswords/nvim-tsumego/actions/workflows/test.yml/badge.svg)](https://github.com/linuxswords/nvim-tsumego/actions/workflows/test.yml)
 
+## Demo
+
+![Demo](./assets/nvim-tsumego-demo-optimized.gif)
+
 A Neovim plugin for solving tsumego (Go tactics puzzles) directly in your terminal editor.
 
 ## Features
