@@ -5,6 +5,18 @@ All notable changes to nvim-tsumego will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-11-30
+
+### Added
+- Randomized puzzle ordering with difficulty level grouping for varied practice sessions
+  - Puzzles are automatically grouped by difficulty level (extracted from SGF DI property)
+  - Within each difficulty level, puzzles are randomized for variety
+  - Difficulty groups are presented in alphabetical order (e.g., Easy, Hard, Medium)
+  - Puzzles without difficulty metadata are placed at the end
+
+### Changed
+- Puzzle loading now randomizes order within difficulty groups instead of simple alphabetical sorting
+
 ## [0.5.0] - 2025-11-01
 
 ### Added
