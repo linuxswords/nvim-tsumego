@@ -68,6 +68,35 @@ function M.format_coordinate(row, col, size)
   return col_char .. row_num
 end
 
+-- Extract difficulty level from an SGF file (lightweight parsing)
+local function extract_difficulty(filepath)
+  local file = io.open(filepath, "r")
+  if not file then
+    return nil
+  end
+
+  -- Read only the beginning of the file (first 1000 chars should be enough for metadata)
+  local content = file:read(1000)
+  file:close()
+
+  if not content then
+    return nil
+  end
+
+  -- Look for DI[...] property (difficulty)
+  local difficulty = content:match("DI%[([^%]]-)%]")
+  return difficulty
+end
+
+-- Shuffle a table in place using Fisher-Yates algorithm
+local function shuffle_table(t)
+  for i = #t, 2, -1 do
+    local j = math.random(i)
+    t[i], t[j] = t[j], t[i]
+  end
+  return t
+end
+
 -- Get all SGF files in a directory
 function M.get_sgf_files(directory)
   local files = {}
@@ -91,8 +120,53 @@ function M.get_sgf_files(directory)
     end
   end
 
-  table.sort(files)
-  return files
+  -- Initialize random seed once per call
+  math.randomseed(os.time() + vim.loop.hrtime())
+
+  -- Group files by difficulty level
+  local difficulty_groups = {}
+  local no_difficulty = {}
+
+  for _, filepath in ipairs(files) do
+    local difficulty = extract_difficulty(filepath)
+    if difficulty then
+      if not difficulty_groups[difficulty] then
+        difficulty_groups[difficulty] = {}
+      end
+      table.insert(difficulty_groups[difficulty], filepath)
+    else
+      table.insert(no_difficulty, filepath)
+    end
+  end
+
+  -- Randomize within each difficulty group
+  for _, group in pairs(difficulty_groups) do
+    shuffle_table(group)
+  end
+  shuffle_table(no_difficulty)
+
+  -- Combine groups in a consistent order
+  -- Sort difficulty levels to ensure consistent ordering between sessions
+  local difficulty_levels = {}
+  for level, _ in pairs(difficulty_groups) do
+    table.insert(difficulty_levels, level)
+  end
+  table.sort(difficulty_levels)
+
+  -- Build final file list: grouped by difficulty, randomized within groups
+  local result = {}
+  for _, level in ipairs(difficulty_levels) do
+    for _, filepath in ipairs(difficulty_groups[level]) do
+      table.insert(result, filepath)
+    end
+  end
+
+  -- Add files without difficulty at the end
+  for _, filepath in ipairs(no_difficulty) do
+    table.insert(result, filepath)
+  end
+
+  return result
 end
 
 -- Ensure puzzle directory exists

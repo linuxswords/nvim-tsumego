@@ -107,4 +107,71 @@ describe("helpers", function()
       end
     end)
   end)
+
+  describe("get_sgf_files", function()
+    it("should return empty table for non-existent directory", function()
+      local files = helpers.get_sgf_files("/non/existent/directory")
+      assert.are.same({}, files)
+    end)
+
+    it("should return files from test directory", function()
+      -- Create a temporary test directory
+      local test_dir = vim.fn.stdpath("data") .. "/test-puzzles-" .. os.time()
+      vim.fn.mkdir(test_dir, "p")
+
+      -- Create test SGF files with different difficulty levels
+      local test_files = {
+        { name = "easy1.sgf", content = "(;GM[1]FF[4]SZ[9]DI[Easy];B[aa]C[RIGHT])" },
+        { name = "easy2.sgf", content = "(;GM[1]FF[4]SZ[9]DI[Easy];B[bb]C[RIGHT])" },
+        { name = "medium1.sgf", content = "(;GM[1]FF[4]SZ[9]DI[Medium];B[cc]C[RIGHT])" },
+        { name = "hard1.sgf", content = "(;GM[1]FF[4]SZ[9]DI[Hard];B[dd]C[RIGHT])" },
+        { name = "no_diff.sgf", content = "(;GM[1]FF[4]SZ[9];B[ee]C[RIGHT])" },
+      }
+
+      for _, file in ipairs(test_files) do
+        local f = io.open(test_dir .. "/" .. file.name, "w")
+        f:write(file.content)
+        f:close()
+      end
+
+      -- Get files
+      local files = helpers.get_sgf_files(test_dir)
+
+      -- Should return all files
+      assert.equals(5, #files)
+
+      -- Extract difficulty levels from returned files
+      local difficulties = {}
+      for _, filepath in ipairs(files) do
+        local f = io.open(filepath, "r")
+        local content = f:read("*all")
+        f:close()
+
+        local diff = content:match("DI%[([^%]]-)%]") or "None"
+        table.insert(difficulties, diff)
+      end
+
+      -- Verify that files are grouped by difficulty (alphabetically)
+      -- Easy comes before Hard, Hard before Medium, Medium before None
+      local found_easy = false
+      local found_hard = false
+      local found_medium = false
+
+      for _, diff in ipairs(difficulties) do
+        if diff == "Easy" then
+          found_easy = true
+          assert.is_false(found_hard, "Easy should come before Hard")
+          assert.is_false(found_medium, "Easy should come before Medium")
+        elseif diff == "Hard" then
+          found_hard = true
+          assert.is_false(found_medium, "Hard should come before Medium")
+        elseif diff == "Medium" then
+          found_medium = true
+        end
+      end
+
+      -- Cleanup
+      vim.fn.delete(test_dir, "rf")
+    end)
+  end)
 end)
